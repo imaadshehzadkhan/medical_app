@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:iconly/iconly.dart';
 import '../models/medical_test.dart';
 import '../models/booking.dart';
 import '../theme/app_theme.dart';
@@ -27,13 +28,13 @@ class _BookingScreenState extends State<BookingScreen> {
   final _ageController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
-  
+
   String _selectedGender = 'Male';
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
   CalendarFormat _calendarFormat = CalendarFormat.week;
   String _selectedTimeSlot = '';
   String _selectedPaymentMethod = 'Credit Card';
-  
+
   final List<String> _timeSlots = [
     '08:00 AM',
     '09:00 AM',
@@ -46,16 +47,18 @@ class _BookingScreenState extends State<BookingScreen> {
     '04:00 PM',
     '05:00 PM',
   ];
-  
+
   final List<String> _genders = ['Male', 'Female', 'Other'];
-  
+
   int _currentStep = 0;
-  
+
   bool isDateBeforeToday(DateTime date) {
     final today = DateTime.now();
     return date.year < today.year ||
         (date.year == today.year && date.month < today.month) ||
-        (date.year == today.year && date.month == today.month && date.day < today.day);
+        (date.year == today.year &&
+            date.month == today.month &&
+            date.day < today.day);
   }
 
   @override
@@ -91,18 +94,27 @@ class _BookingScreenState extends State<BookingScreen> {
       ),
       body: Column(
         children: [
-          // Stepper Indicator
+          // Stepper Indicator with enhanced animations
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Row(
               children: [
-                _buildStepIndicator(0, 'Date & Time'),
-                _buildStepConnector(_currentStep > 0),
-                _buildStepIndicator(1, 'Patient Details'),
+                _buildStepIndicator(0, 'Date & Time')
+                    .animate(delay: 100.ms)
+                    .fadeIn(duration: 600.ms)
+                    .slideX(begin: -0.5, end: 0, curve: Curves.easeOut),
+                _buildStepConnector(_currentStep > 0)
+                    .animate(delay: 200.ms)
+                    .fadeIn(duration: 600.ms)
+                    .slideY(begin: 0.3, end: 0, curve: Curves.easeOut),
+                _buildStepIndicator(1, 'Patient Details')
+                    .animate(delay: 300.ms)
+                    .fadeIn(duration: 600.ms)
+                    .slideX(begin: 0.5, end: 0, curve: Curves.easeOut),
               ],
             ),
           ),
-          
+
           // Main Content
           Expanded(
             child: SingleChildScrollView(
@@ -112,7 +124,7 @@ class _BookingScreenState extends State<BookingScreen> {
                   : _buildPatientDetailsStep(),
             ),
           ),
-          
+
           // Bottom Navigation Buttons
           Container(
             padding: const EdgeInsets.all(20),
@@ -146,9 +158,8 @@ class _BookingScreenState extends State<BookingScreen> {
                 if (_currentStep > 0) const SizedBox(width: 16),
                 Expanded(
                   child: Container(
-                    decoration: _currentStep < 1 
-                      ? null 
-                      : AppTheme.gradientDecoration,
+                    decoration:
+                        _currentStep < 1 ? null : AppTheme.gradientDecoration,
                     child: ElevatedButton(
                       onPressed: () {
                         if (_currentStep < 1) {
@@ -166,12 +177,14 @@ class _BookingScreenState extends State<BookingScreen> {
                           }
                         }
                       },
-                      style: _currentStep < 1 
-                        ? AppTheme.primaryButtonStyle 
-                        : AppTheme.gradientButtonStyle,
+                      style: _currentStep < 1
+                          ? AppTheme.primaryButtonStyle
+                          : AppTheme.gradientButtonStyle,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: Text(_currentStep < 1 ? 'Next' : 'Proceed to Payment'),
+                        child: Text(
+                          _currentStep < 1 ? 'Next' : 'Proceed to Payment',
+                        ),
                       ),
                     ),
                   ),
@@ -321,7 +334,7 @@ class _BookingScreenState extends State<BookingScreen> {
               duration: 800.ms,
             ),
         const SizedBox(height: 24),
-        
+
         // Calendar Section
         Text(
           'Select Date',
@@ -382,7 +395,7 @@ class _BookingScreenState extends State<BookingScreen> {
           ),
         ).animate().fadeIn(duration: 800.ms, delay: 200.ms),
         const SizedBox(height: 24),
-        
+
         // Time Slots Section
         Text(
           'Select Time Slot',
@@ -396,7 +409,7 @@ class _BookingScreenState extends State<BookingScreen> {
             final index = entry.key;
             final time = entry.value;
             final isSelected = _selectedTimeSlot == time;
-            
+
             return GestureDetector(
               onTap: () {
                 setState(() {
@@ -409,7 +422,8 @@ class _BookingScreenState extends State<BookingScreen> {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppTheme.primaryColor : AppTheme.cardColor,
+                  color:
+                      isSelected ? AppTheme.primaryColor : AppTheme.cardColor,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isSelected
@@ -429,8 +443,10 @@ class _BookingScreenState extends State<BookingScreen> {
                 child: Text(
                   time,
                   style: AppTheme.bodyMedium.copyWith(
-                    color: isSelected ? Colors.white : AppTheme.textPrimaryColor,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    color:
+                        isSelected ? Colors.white : AppTheme.textPrimaryColor,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),
               ),
@@ -455,116 +471,167 @@ class _BookingScreenState extends State<BookingScreen> {
             style: AppTheme.titleLarge,
           ),
           const SizedBox(height: 20),
-          
-          // Full Name
-          TextFormField(
-            controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Full Name',
-              prefixIcon: Icon(Icons.person),
+          // Group the input fields in a styled container for a polished look.
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.cardColor,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.shadowColor.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your full name';
-              }
-              return null;
-            },
-          ).animate().fadeIn(duration: 600.ms, delay: 100.ms),
-          const SizedBox(height: 16),
-          
-          // Age and Gender in a row
-          Row(
-            children: [
-              // Age Field
-              Expanded(
-                child: TextFormField(
-                  controller: _ageController,
-                  decoration: const InputDecoration(
-                    labelText: 'Age',
-                    prefixIcon: Icon(Icons.calendar_today),
+            child: Column(
+              children: [
+                // Full Name
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Full Name',
+                    prefixIcon: Icon(
+                      IconlyLight.profile,
+                      color: AppTheme.primaryColor,
+                    ),
                   ),
-                  keyboardType: TextInputType.number,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Required';
-                    }
-                    if (int.tryParse(value) == null) {
-                      return 'Invalid age';
+                      return 'Please enter your full name';
                     }
                     return null;
                   },
-                ).animate().fadeIn(duration: 600.ms, delay: 200.ms),
-              ),
-              const SizedBox(width: 16),
-              
-              // Gender Dropdown
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  value: _selectedGender,
-                  decoration: const InputDecoration(
-                    labelText: 'Gender',
-                    prefixIcon: Icon(Icons.people),
+                ).animate().fadeIn(duration: 600.ms, delay: 100.ms),
+                const SizedBox(height: 16),
+                // Age and Gender row with smaller boxes
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 150,
+                      child: TextFormField(
+                        controller: _ageController,
+                        decoration: InputDecoration(
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 16),
+                          labelText: 'Age',
+                          labelStyle: const TextStyle(fontSize: 14),
+                          prefixIcon: Icon(
+                            IconlyLight.calendar,
+                            color: AppTheme.primaryColor,
+                            size: 25,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Required';
+                          }
+                          if (int.tryParse(value) == null) {
+                            return 'Invalid age';
+                          }
+                          return null;
+                        },
+                      ).animate().fadeIn(duration: 600.ms, delay: 200.ms),
+                    ),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      width: 140,
+                      height: 60,
+                      child: DropdownButtonFormField<String>(
+                        value: _selectedGender,
+                        isDense: true,
+                        isExpanded: true,
+                        icon: Icon(
+                          IconlyLight.arrow_down_2,
+                          color: AppTheme.primaryColor,
+                          size: 20,
+                        ),
+                        style: const TextStyle(fontSize: 10),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 16),
+                          labelText: 'Gender',
+                          labelStyle: const TextStyle(fontSize: 10),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        items: _genders.map((gender) {
+                          return DropdownMenuItem(
+                            value: gender,
+                            child: Text(
+                              gender,
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedGender = value!;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Select';
+                          }
+                          return null;
+                        },
+                      ).animate().fadeIn(duration: 600.ms, delay: 300.ms),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // Email
+                TextFormField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: Icon(
+                      IconlyLight.message,
+                      color: AppTheme.primaryColor,
+                    ),
                   ),
-                  items: _genders.map((gender) {
-                    return DropdownMenuItem(
-                      value: gender,
-                      child: Text(gender),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedGender = value!;
-                    });
-                  },
+                  keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please select gender';
+                      return 'Please enter your email';
+                    }
+                    if (!value.contains('@') || !value.contains('.')) {
+                      return 'Enter valid email';
                     }
                     return null;
                   },
-                ).animate().fadeIn(duration: 600.ms, delay: 300.ms),
-              ),
-            ],
+                ).animate().fadeIn(duration: 600.ms, delay: 400.ms),
+                const SizedBox(height: 16),
+                // Phone
+                TextFormField(
+                  controller: _phoneController,
+                  decoration: InputDecoration(
+                    labelText: 'Phone Number',
+                    prefixIcon: Icon(
+                      IconlyLight.call,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                  keyboardType: TextInputType.phone,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Enter phone';
+                    }
+                    return null;
+                  },
+                ).animate().fadeIn(duration: 600.ms, delay: 500.ms),
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
-          
-          // Email
-          TextFormField(
-            controller: _emailController,
-            decoration: const InputDecoration(
-              labelText: 'Email',
-              prefixIcon: Icon(Icons.email),
-            ),
-            keyboardType: TextInputType.emailAddress,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your email';
-              }
-              if (!value.contains('@') || !value.contains('.')) {
-                return 'Please enter a valid email';
-              }
-              return null;
-            },
-          ).animate().fadeIn(duration: 600.ms, delay: 400.ms),
-          const SizedBox(height: 16),
-          
-          // Phone
-          TextFormField(
-            controller: _phoneController,
-            decoration: const InputDecoration(
-              labelText: 'Phone Number',
-              prefixIcon: Icon(Icons.phone),
-            ),
-            keyboardType: TextInputType.phone,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your phone number';
-              }
-              return null;
-            },
-          ).animate().fadeIn(duration: 600.ms, delay: 500.ms),
           const SizedBox(height: 30),
-          
           // Appointment Summary
           Container(
             padding: const EdgeInsets.all(16),
@@ -626,7 +693,8 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  Widget _buildSummaryRow(String label, String value, {bool isHighlighted = false}) {
+  Widget _buildSummaryRow(String label, String value,
+      {bool isHighlighted = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -668,7 +736,7 @@ class _BookingScreenState extends State<BookingScreen> {
       'email': _emailController.text,
       'phone': _phoneController.text,
     };
-    
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -702,4 +770,4 @@ class _BookingScreenState extends State<BookingScreen> {
     _phoneController.dispose();
     super.dispose();
   }
-} 
+}

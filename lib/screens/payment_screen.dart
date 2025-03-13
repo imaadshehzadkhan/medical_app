@@ -3,6 +3,7 @@ import 'package:flutter_credit_card/flutter_credit_card.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:confetti/confetti.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../models/medical_test.dart';
 import '../theme/app_theme.dart';
 import '../screens/confirmation_screen.dart';
@@ -36,20 +37,34 @@ class _PaymentScreenState extends State<PaymentScreen> {
   String cardHolderName = '';
   String cvvCode = '';
   bool isCvvFocused = false;
-  bool useGlassMorphism = true;
-  bool useBackgroundImage = false;
   bool isLoading = false;
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   late ConfettiController _confettiController;
   late Razorpay _razorpay;
 
+  // Reordered payment methods: Google Pay, Cash on Delivery, Credit Card, Razorpay.
   final List<Map<String, dynamic>> _paymentMethods = [
-    {'name': 'Credit Card', 'icon': Icons.credit_card, 'selected': true},
-    {'name': 'PayPal', 'icon': Icons.paypal, 'selected': false},
-    {'name': 'Apple Pay', 'icon': Icons.apple, 'selected': false},
-    {'name': 'Google Pay', 'icon': Icons.g_mobiledata, 'selected': false},
-    {'name': 'Razorpay', 'icon': Icons.currency_rupee, 'selected': false},
+    {
+      'name': 'Google Pay',
+      'icon': ImageIcon(AssetImage('assets/google_pay.png')),
+      'selected': true,
+    },
+    {
+      'name': 'Cash on Delivery',
+      'icon': Icons.attach_money,
+      'selected': false,
+    },
+    {
+      'name': 'Credit Card',
+      'icon': Icons.credit_card,
+      'selected': false,
+    },
+    {
+      'name': 'Razorpay',
+      'icon': ImageIcon(AssetImage('assets/razorpay.png')),
+      'selected': false,
+    },
   ];
 
   @override
@@ -77,7 +92,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: Text('Payment', style: AppTheme.titleLarge),
+        title: Text('Payment',
+            style: GoogleFonts.lato(textStyle: AppTheme.titleLarge)),
         centerTitle: true,
         backgroundColor: AppTheme.backgroundColor,
         elevation: 0,
@@ -121,7 +137,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
               Colors.white,
             ],
           ),
-
           // Main content
           SingleChildScrollView(
             child: Padding(
@@ -132,8 +147,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   // Payment methods
                   _buildPaymentMethods(),
                   const SizedBox(height: 30),
-
-                  // Credit card form
+                  // Credit card form (visible for demonstration if needed)
                   FadeInUp(
                     duration: const Duration(milliseconds: 500),
                     child: CreditCardForm(
@@ -151,14 +165,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     ),
                   ),
                   const SizedBox(height: 30),
-
-                  // Order summary
+                  // Order summary using a beautiful table
                   FadeInUp(
                     duration: const Duration(milliseconds: 600),
-                    child: _buildOrderSummary(),
+                    child: _buildOrderSummaryTable(),
                   ),
                   const SizedBox(height: 40),
-
                   // Pay button
                   FadeInUp(
                     duration: const Duration(milliseconds: 700),
@@ -180,9 +192,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
                               )
                             : Text(
                                 'Pay \$${widget.totalAmount.toStringAsFixed(2)}',
-                                style: AppTheme.titleMedium.copyWith(
-                                  color: Colors.white,
-                                  fontSize: 16,
+                                style: GoogleFonts.lato(
+                                  textStyle: AppTheme.titleMedium.copyWith(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
                                 ),
                               ),
                       ),
@@ -204,11 +218,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
       children: [
         Text(
           'Payment Method',
-          style: AppTheme.titleLarge,
+          style: GoogleFonts.lato(textStyle: AppTheme.titleLarge),
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 100,
+          height: 120,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: _paymentMethods.length,
@@ -228,6 +242,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   child: Container(
                     width: 100,
                     margin: const EdgeInsets.only(right: 16),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: method['selected']
                           ? AppTheme.primaryColor.withOpacity(0.1)
@@ -252,24 +267,28 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                 : AppTheme.backgroundColor,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(
-                            method['icon'],
-                            color: method['selected']
-                                ? AppTheme.primaryColor
-                                : AppTheme.textSecondaryColor,
-                            size: method['name'] == 'Google Pay' ? 32 : 24,
-                          ),
+                          child: method['icon'] is IconData
+                              ? Icon(
+                                  method['icon'],
+                                  color: method['selected']
+                                      ? AppTheme.primaryColor
+                                      : AppTheme.textSecondaryColor,
+                                  size: 24,
+                                )
+                              : method['icon'],
                         ),
                         const SizedBox(height: 8),
                         Text(
                           method['name'],
-                          style: AppTheme.bodySmall.copyWith(
-                            color: method['selected']
-                                ? AppTheme.primaryColor
-                                : AppTheme.textSecondaryColor,
-                            fontWeight: method['selected']
-                                ? FontWeight.w600
-                                : FontWeight.normal,
+                          style: GoogleFonts.lato(
+                            textStyle: AppTheme.bodySmall.copyWith(
+                              color: method['selected']
+                                  ? AppTheme.primaryColor
+                                  : AppTheme.textSecondaryColor,
+                              fontWeight: method['selected']
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                            ),
                           ),
                         ),
                       ],
@@ -284,7 +303,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _buildOrderSummary() {
+  Widget _buildOrderSummaryTable() {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -298,41 +317,85 @@ class _PaymentScreenState extends State<PaymentScreen> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Table(
+        columnWidths: const {
+          0: FlexColumnWidth(2),
+          1: FlexColumnWidth(1),
+        },
         children: [
-          Text(
-            'Order Summary',
-            style: AppTheme.titleMedium,
-          ),
-          const SizedBox(height: 16),
-          _buildSummaryRow('Test', widget.test.name),
-          // Lab name is hard-coded for now. Update it as needed.
-          _buildSummaryRow('Lab', 'HealthCore Diagnostics'),
-          _buildSummaryRow('Patient', widget.patientDetails['name'] ?? 'N/A'),
-          _buildSummaryRow(
-            'Date & Time',
-            '${widget.appointmentDate.day}/${widget.appointmentDate.month}/${widget.appointmentDate.year} | ${widget.timeSlot}',
-          ),
-          const Divider(height: 24),
-          _buildSummaryRow('Test Fee', '\$${widget.test.price.toStringAsFixed(2)}'),
-          _buildSummaryRow('Processing Fee', '\$5.00'),
-          _buildSummaryRow('Tax', '\$${(widget.test.price * 0.08).toStringAsFixed(2)}'),
-          const Divider(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          TableRow(
             children: [
-              Text(
-                'Total',
-                style: AppTheme.titleMedium.copyWith(
-                  fontWeight: FontWeight.bold,
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  'Order Summary',
+                  style: GoogleFonts.lato(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimaryColor,
+                  ),
                 ),
               ),
-              Text(
-                '\$${widget.totalAmount.toStringAsFixed(2)}',
-                style: AppTheme.titleMedium.copyWith(
-                  color: AppTheme.primaryColor,
-                  fontWeight: FontWeight.bold,
+              const SizedBox(),
+            ],
+          ),
+          _buildTableRow('Test', widget.test.name),
+          _buildTableRow('Lab', 'HealthCore Diagnostics'),
+          _buildTableRow('Patient', widget.patientDetails['name'] ?? 'N/A'),
+          _buildTableRow('Date & Time',
+              '${widget.appointmentDate.day}/${widget.appointmentDate.month}/${widget.appointmentDate.year} | ${widget.timeSlot}'),
+          TableRow(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Divider(color: AppTheme.dividerColor),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Divider(color: AppTheme.dividerColor),
+              ),
+            ],
+          ),
+          _buildTableRow(
+              'Test Fee', '\$${widget.test.price.toStringAsFixed(2)}'),
+          _buildTableRow('Processing Fee', '\$5.00'),
+          _buildTableRow(
+              'Tax', '\$${(widget.test.price * 0.08).toStringAsFixed(2)}'),
+          TableRow(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Divider(color: AppTheme.dividerColor),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Divider(color: AppTheme.dividerColor),
+              ),
+            ],
+          ),
+          TableRow(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  'Total',
+                  style: GoogleFonts.lato(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimaryColor,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  '\$${widget.totalAmount.toStringAsFixed(2)}',
+                  style: GoogleFonts.lato(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.primaryColor,
+                  ),
+                  textAlign: TextAlign.right,
                 ),
               ),
             ],
@@ -342,27 +405,31 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _buildSummaryRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
+  TableRow _buildTableRow(String label, String value) {
+    return TableRow(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6.0),
+          child: Text(
             label,
-            style: AppTheme.bodyMedium.copyWith(
+            style: GoogleFonts.lato(
+              fontSize: 14,
               color: AppTheme.textSecondaryColor,
             ),
           ),
-          Text(
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6.0),
+          child: Text(
             value,
-            style: AppTheme.bodyMedium.copyWith(
-              fontWeight: FontWeight.w500,
+            style: GoogleFonts.lato(
+              fontSize: 14,
+              color: AppTheme.textSecondaryColor,
             ),
-            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.right,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -378,10 +445,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   // Razorpay event handlers
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
-    // Show confetti effect
     _confettiController.play();
 
-    // Create booking with testName and labName values.
     final booking = Booking.createBooking(
       testId: widget.test.id,
       labId: widget.labId,
@@ -402,7 +467,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
       isLoading = false;
     });
 
-    // Navigate to confirmation screen after a brief delay
     Future.delayed(const Duration(seconds: 1), () {
       if (mounted) {
         Navigator.pushAndRemoveUntil(
@@ -423,8 +487,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
     setState(() {
       isLoading = false;
     });
-
-    // Show error message
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Payment failed: ${response.message}'),
@@ -452,10 +514,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
     });
 
     if (selectedMethod == 'Razorpay') {
-      // Open Razorpay checkout
       var options = {
-        'key': 'rzp_test_1DP5mmOlF5G5ag', // Replace with your actual test key
-        'amount': (widget.totalAmount * 100).toInt(), // Amount in smallest currency unit
+        'key': 'rzp_test_1DP5mmOlF5G5ag', // Replace with your test key
+        'amount': (widget.totalAmount * 100).toInt(),
         'name': 'ADTSMED',
         'description': widget.test.name,
         'prefill': {
@@ -481,14 +542,52 @@ class _PaymentScreenState extends State<PaymentScreen> {
           ),
         );
       }
-    } else if (formKey.currentState!.validate() || selectedMethod != 'Credit Card') {
-      // Simulate payment processing for other methods
+    } else if (selectedMethod == 'Credit Card') {
+      if (formKey.currentState!.validate()) {
+        await Future.delayed(const Duration(seconds: 2));
+
+        _confettiController.play();
+        final booking = Booking.createBooking(
+          testId: widget.test.id,
+          labId: widget.labId,
+          testName: widget.test.name,
+          labName: 'HealthCore Diagnostics',
+          appointmentDate: widget.appointmentDate,
+          timeSlot: widget.timeSlot,
+          patientName: widget.patientDetails['name'] ?? '',
+          patientAge: widget.patientDetails['age'] ?? '',
+          patientGender: widget.patientDetails['gender'] ?? '',
+          patientEmail: widget.patientDetails['email'] ?? '',
+          patientPhone: widget.patientDetails['phone'] ?? '',
+          amount: widget.totalAmount,
+          paymentMethod: 'Credit Card',
+        );
+        setState(() {
+          isLoading = false;
+        });
+        await Future.delayed(const Duration(seconds: 1));
+        if (mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ConfirmationScreen(
+                booking: booking,
+                test: widget.test,
+              ),
+            ),
+            (route) => false,
+          );
+        }
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } else {
+      // For Google Pay and Cash on Delivery, simulate payment processing.
       await Future.delayed(const Duration(seconds: 2));
 
-      // Play confetti
       _confettiController.play();
-
-      // Create booking with the additional fields
       final booking = Booking.createBooking(
         testId: widget.test.id,
         labId: widget.labId,
@@ -504,14 +603,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
         amount: widget.totalAmount,
         paymentMethod: selectedMethod,
       );
-
       setState(() {
         isLoading = false;
       });
-
-      // Show success message and navigate to confirmation screen after a brief delay
       await Future.delayed(const Duration(seconds: 1));
-
       if (mounted) {
         Navigator.pushAndRemoveUntil(
           context,
@@ -524,10 +619,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
           (route) => false,
         );
       }
-    } else {
-      setState(() {
-        isLoading = false;
-      });
     }
   }
 }

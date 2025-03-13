@@ -323,7 +323,7 @@ class _MainScreenState extends State<MainScreen>
               AnimatedTextKit(
                 animatedTexts: [
                   TypewriterAnimatedText(
-                    'MED',
+                    'ADTSMED',
                     textStyle: AppTheme.titleLarge.copyWith(
                       color: AppTheme.primaryColor,
                       fontWeight: FontWeight.bold,
