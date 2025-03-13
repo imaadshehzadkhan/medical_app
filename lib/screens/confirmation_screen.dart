@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:iconly/iconly.dart';
 import 'package:intl/intl.dart';
 import '../models/booking.dart';
 import '../models/medical_test.dart';
@@ -119,28 +120,28 @@ class ConfirmationScreen extends StatelessWidget {
                       _buildDetailRow(
                         'Test',
                         test.name,
-                        Icons.science_outlined,
+                        IconlyLight.ticket_star,
                       ),
                       const Divider(height: 16),
                       // Patient name
                       _buildDetailRow(
                         'Patient',
                         booking.patientName,
-                        Icons.person,
+                        IconlyLight.profile,
                       ),
                       const Divider(height: 16),
                       // Date and time
                       _buildDetailRow(
                         'Date & Time',
                         '${DateFormat('EEE, MMM d, yyyy').format(booking.appointmentDate)} | ${booking.timeSlot}',
-                        Icons.event,
+                        IconlyLight.calendar,
                       ),
                       const Divider(height: 16),
                       // Amount paid
                       _buildDetailRow(
                         'Amount Paid',
                         '\$${booking.amount.toStringAsFixed(2)}',
-                        Icons.payments_outlined,
+                        IconlyLight.send,
                         valueColor: AppTheme.successColor,
                       ),
                       const Divider(height: 16),
@@ -148,7 +149,7 @@ class ConfirmationScreen extends StatelessWidget {
                       _buildDetailRow(
                         'Payment Method',
                         booking.paymentMethod,
-                        Icons.credit_card,
+                        IconlyLight.wallet,
                       ),
                     ],
                   ),

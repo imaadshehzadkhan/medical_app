@@ -109,7 +109,7 @@ class _LabDetailScreenState extends State<LabDetailScreen>
                   ],
                 ),
                 child: const Icon(
-                  IconlyLight.arrow_left, // Using Iconly for back icon
+                  IconlyLight.arrow_left,
                   color: AppTheme.textPrimaryColor,
                 ),
               ),
@@ -210,7 +210,7 @@ class _LabDetailScreenState extends State<LabDetailScreen>
                   Row(
                     children: [
                       const Icon(
-                        IconlyLight.location, // Using Iconly for location
+                        IconlyLight.location,
                         size: 20,
                         color: AppTheme.textSecondaryColor,
                       ),
@@ -253,7 +253,7 @@ class _LabDetailScreenState extends State<LabDetailScreen>
                   Row(
                     children: [
                       const Icon(
-                        IconlyLight.time_circle, // Using Iconly for time
+                        IconlyLight.time_circle,
                         size: 20,
                         color: AppTheme.textSecondaryColor,
                       ),
@@ -269,17 +269,17 @@ class _LabDetailScreenState extends State<LabDetailScreen>
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // Distance
+                  // Distance with formatted value
                   Row(
                     children: [
                       const Icon(
-                        IconlyLight.location, // Reusing Iconly location icon
+                        IconlyLight.location,
                         size: 20,
                         color: AppTheme.textSecondaryColor,
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Distance: ${widget.lab.distance} km',
+                        'Distance: ${widget.lab.distance.toStringAsFixed(2)} km',
                         style: GoogleFonts.lato(
                           textStyle: AppTheme.bodyMedium.copyWith(
                             color: AppTheme.textSecondaryColor,
@@ -312,7 +312,7 @@ class _LabDetailScreenState extends State<LabDetailScreen>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            IconlyLight.info_square, // Using Iconly icon
+                            IconlyLight.info_square,
                             size: 64,
                             color: AppTheme.textSecondaryColor.withOpacity(0.5),
                           ),
@@ -419,8 +419,7 @@ class _LabDetailScreenState extends State<LabDetailScreen>
                           color: isSelected
                               ? AppTheme.primaryColor
                               : AppTheme.cardColor,
-                          borderRadius:
-                              BorderRadius.circular(8), // Squared look
+                          borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: isSelected
                                 ? AppTheme.primaryColor

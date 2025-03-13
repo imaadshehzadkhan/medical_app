@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:adtsmed/models/booking.dart';
 import 'package:adtsmed/models/laboratory.dart';
 import 'package:adtsmed/models/medical_test.dart';
@@ -11,8 +14,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:iconly/iconly.dart';
-import 'package:flutter/material.dart';
 
+/// MainScreen that shows the home content including labs list and dynamic location.
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
 
@@ -20,8 +23,9 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
+/// Note: We add WidgetsBindingObserver to refresh location when the app resumes.
 class _MainScreenState extends State<MainScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   // Page index for bottom navigation bar
   int _selectedIndex = 0;
 
@@ -60,12 +64,41 @@ class _MainScreenState extends State<MainScreen>
   late TabController _tabController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  // Variables for user location.
+  Position? _userPosition;
+  String _userLocationString = "Fetching location...";
+  // Updated lab coordinates in Kashmir, India.
+  final Map<String, List<double>> _labCoordinates = {
+    '1': [34.0837, 74.7973], // Srinagar
+    '2': [32.7266, 74.8570], // Jammu
+    '3': [34.4833, 74.4667], // Kupwara
+    '4': [34.2100, 74.3500], // Baramulla
+    '5': [33.7352, 75.1500], // Anantnag
+  };
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _labs = Laboratory.getSampleLabs();
     _filteredLabs = _labs;
     _tabController = TabController(length: 2, vsync: this);
+    _getUserLocation();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  // Refresh location automatically when the app resumes.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _getUserLocation();
+    }
   }
 
   void _filterLabs(String query) {
@@ -102,6 +135,93 @@ class _MainScreenState extends State<MainScreen>
         default:
           _filteredLabs = _labs;
       }
+    });
+  }
+
+  // Fetch user location and update labs distances.
+  void _getUserLocation() async {
+    try {
+      Position position = await _determinePosition();
+      setState(() {
+        _userPosition = position;
+      });
+
+      // Reverse geocode to get a human-readable address.
+      List<Placemark> placemarks =
+          await placemarkFromCoordinates(position.latitude, position.longitude);
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks.first;
+        setState(() {
+          _userLocationString = "${place.locality}, ${place.country}";
+        });
+      }
+
+      // Update labs with the new calculated distances.
+      _updateLabDistances(position);
+    } catch (e) {
+      setState(() {
+        _userLocationString = "Location not available";
+      });
+    }
+  }
+
+  // Determine the current position (with permission checks).
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      throw Exception("Location services are disabled.");
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw Exception("Location permissions are denied.");
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      throw Exception("Location permissions are permanently denied.");
+    }
+
+    return await Geolocator.getCurrentPosition();
+  }
+
+  // Update each lab's distance based on the user's current location.
+  void _updateLabDistances(Position userPosition) {
+    List<Laboratory> updatedLabs = _labs.map((lab) {
+      if (_labCoordinates.containsKey(lab.id)) {
+        List<double> coords = _labCoordinates[lab.id]!;
+        double labLat = coords[0];
+        double labLng = coords[1];
+        double distanceInMeters = Geolocator.distanceBetween(
+          userPosition.latitude,
+          userPosition.longitude,
+          labLat,
+          labLng,
+        );
+        double distanceInKm = distanceInMeters / 1000;
+        // Create a new Laboratory instance with updated distance.
+        return Laboratory(
+          id: lab.id,
+          name: lab.name,
+          address: lab.address,
+          imageUrl: lab.imageUrl,
+          rating: lab.rating,
+          reviewCount: lab.reviewCount,
+          description: lab.description,
+          facilities: lab.facilities,
+          isOpen: lab.isOpen,
+          openingHours: lab.openingHours,
+          distance: distanceInKm,
+        );
+      }
+      return lab;
+    }).toList();
+
+    setState(() {
+      _labs = updatedLabs;
+      _filteredLabs = updatedLabs;
     });
   }
 
@@ -215,27 +335,41 @@ class _MainScreenState extends State<MainScreen>
                 totalRepeatCount: 1,
                 displayFullTextOnTap: true,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 1),
               Row(
                 children: [
-                  // Updated location icon using Iconly
                   const Icon(
-                    IconlyBold.location,
-                    size: 16,
+                    IconlyLight.location,
+                    size: 20,
                     color: AppTheme.primaryColor,
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 5),
+                  // Display the dynamic user location here.
                   Text(
-                    'New York, USA',
+                    _userLocationString,
                     style: AppTheme.bodySmall.copyWith(
                       color: AppTheme.textSecondaryColor,
                     ),
                   ),
                   const SizedBox(width: 2),
-                  const Icon(
-                    Icons.keyboard_arrow_down,
-                    size: 16,
-                    color: AppTheme.textSecondaryColor,
+                  // Replace default arrow with a PopupMenuButton using Iconly icon.
+                  PopupMenuButton(
+                    icon: const Icon(
+                      IconlyLight.arrow_down_2,
+                      size: 16,
+                      color: AppTheme.textSecondaryColor,
+                    ),
+                    onSelected: (value) {
+                      if (value == 'refresh') {
+                        _getUserLocation();
+                      }
+                    },
+                    itemBuilder: (BuildContext context) => <PopupMenuEntry>[
+                      const PopupMenuItem(
+                        value: 'refresh',
+                        child: Text('Refresh Location'),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -254,10 +388,9 @@ class _MainScreenState extends State<MainScreen>
                   child: Badge(
                     label: const Text('3'),
                     child: const Icon(
-                      // Updated notification icon using Iconly
-                      IconlyBold.notification,
-                      color: AppTheme.primaryColor,
-                      size: 24,
+                      IconlyLight.notification,
+                      color: Color.fromARGB(255, 4, 75, 240),
+                      size: 25,
                     ),
                   ),
                 ),
@@ -724,7 +857,7 @@ class _MainScreenState extends State<MainScreen>
                     color: isSelected
                         ? AppTheme.primaryColor
                         : AppTheme.primaryLightColor,
-                    borderRadius: BorderRadius.circular(8), // More square look
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(
                     child: Text(
@@ -787,7 +920,12 @@ class _MainScreenState extends State<MainScreen>
             child: SlideAnimation(
               verticalOffset: 50.0,
               child: FadeInAnimation(
-                child: LabCard(lab: _filteredLabs[index]),
+                child: LabCard(
+                  lab: _filteredLabs[index],
+                  // Ensure the lab distance is shown with 2 decimal places.
+                  formattedDistance:
+                      _filteredLabs[index].distance.toStringAsFixed(2),
+                ),
               ),
             ),
           );
@@ -987,7 +1125,7 @@ class _MainScreenState extends State<MainScreen>
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.primaryColor : AppTheme.cardColor,
-          borderRadius: BorderRadius.circular(8), // More square look
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected ? AppTheme.primaryColor : AppTheme.dividerColor,
             width: isSelected ? 1.5 : 1,

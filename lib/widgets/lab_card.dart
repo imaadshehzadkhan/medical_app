@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:glassmorphism/glassmorphism.dart';
+import 'package:iconly/iconly.dart';
 import '../models/laboratory.dart';
 import '../theme/app_theme.dart';
 import '../screens/lab_detail_screen.dart';
 
 class LabCard extends StatelessWidget {
   final Laboratory lab;
+  final String formattedDistance;
 
   const LabCard({
     Key? key,
     required this.lab,
+    required this.formattedDistance,
   }) : super(key: key);
 
   @override
@@ -41,10 +44,10 @@ class LabCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Lab Image with Open/Closed Label
+            // Lab Image with overlays and badges
             Stack(
               children: [
-                // Image
+                // Lab Image
                 ClipRRect(
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(20),
@@ -78,7 +81,6 @@ class LabCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                
                 // Gradient overlay for better text visibility
                 Positioned(
                   bottom: 0,
@@ -98,7 +100,6 @@ class LabCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                
                 // Lab Name and Rating at the bottom of the image
                 Positioned(
                   bottom: 12,
@@ -159,7 +160,6 @@ class LabCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                
                 // Status Badge (Open/Closed)
                 Positioned(
                   top: 16,
@@ -202,13 +202,12 @@ class LabCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                
-                // Distance Badge
+                // Distance Badge – updated with wider container and circular Iconly icon
                 Positioned(
                   top: 16,
                   left: 16,
                   child: GlassmorphicContainer(
-                    width: 82,
+                    width: 100,
                     height: 36,
                     borderRadius: 18,
                     blur: 20,
@@ -233,14 +232,22 @@ class LabCard extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
-                          Icons.location_on_rounded,
-                          color: AppTheme.primaryColor,
-                          size: 16,
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            IconlyLight.location,
+                            color: AppTheme.primaryColor,
+                            size: 14,
+                          ),
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 6),
                         Text(
-                          '${lab.distance} km',
+                          '$formattedDistance km',
                           style: AppTheme.labelMedium.copyWith(
                             color: AppTheme.textPrimaryColor,
                             fontWeight: FontWeight.w600,
@@ -250,59 +257,10 @@ class LabCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                
-                // Premium Badge (if rating > 4.5)
-                if (lab.rating > 4.5)
-                  Positioned(
-                    top: 60,
-                    left: 16,
-                    child: GlassmorphicContainer(
-                      width: 100,
-                      height: 36,
-                      borderRadius: 18,
-                      blur: 20,
-                      alignment: Alignment.center,
-                      border: 0,
-                      linearGradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          const Color(0xFFFFD700).withOpacity(0.7),
-                          const Color(0xFFFFA500).withOpacity(0.7),
-                        ],
-                      ),
-                      borderGradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.white.withOpacity(0.2),
-                          Colors.white.withOpacity(0.2),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.verified,
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Premium',
-                            style: AppTheme.labelMedium.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                // (Premium badge removed)
               ],
             ),
-            
-            // Lab Info
+            // Lab Info Section
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -312,7 +270,7 @@ class LabCard extends StatelessWidget {
                   Row(
                     children: [
                       const Icon(
-                        Icons.location_on_outlined,
+                        IconlyLight.location,
                         size: 18,
                         color: AppTheme.primaryColor,
                       ),
@@ -329,7 +287,6 @@ class LabCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  
                   // Opening hours
                   Row(
                     children: [
@@ -349,45 +306,36 @@ class LabCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  
-                  // Facilities badges
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: lab.facilities
-                        .take(3)
-                        .map((facility) => Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    AppTheme.primaryColor.withOpacity(0.1),
-                                    AppTheme.secondaryColor.withOpacity(0.1),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: AppTheme.primaryColor.withOpacity(0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Text(
-                                facility,
-                                style: AppTheme.bodySmall.copyWith(
-                                  color: AppTheme.primaryColor,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ))
-                        .toList(),
+                  // Facility badge – now only "Home Collection" is displayed.
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          AppTheme.primaryColor.withOpacity(0.1),
+                          AppTheme.secondaryColor.withOpacity(0.1),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: AppTheme.primaryColor.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      'Home Collection',
+                      style: AppTheme.bodySmall.copyWith(
+                        color: AppTheme.primaryColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  
                   // Book Now button
                   Container(
                     width: double.infinity,
@@ -444,4 +392,4 @@ class LabCard extends StatelessWidget {
       ),
     );
   }
-} 
+}

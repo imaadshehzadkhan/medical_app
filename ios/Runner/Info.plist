@@ -45,5 +45,8 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Add location usage description -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to show nearby labs and calculate distances.</string>
 </dict>
 </plist>
